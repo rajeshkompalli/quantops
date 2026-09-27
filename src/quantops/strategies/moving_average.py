@@ -16,4 +16,19 @@ def add_moving_average_signals(df,short_window,long_window):
 
     return df
 
+def generate_signals(df, short_window=20, long_window=50):
+    df = add_moving_average_signals(df, short_window, long_window)
 
+    df['signal'] = 'HOLD'
+    df.loc[df['golden_cross'] == True, 'signal'] = 'BUY'
+    df.loc[df['death_cross'] == True, 'signal'] = 'SELL'
+
+    return df
+
+
+
+if __name__ == "__main__":
+    from quantops.data.alpaca_client import get_historical_bars
+    df = get_historical_bars("AAPL", "2024-01-01")
+    df = generate_signals(df)
+    print(df[df['signal'] != 'HOLD'][['timestamp', 'close', 'signal']])

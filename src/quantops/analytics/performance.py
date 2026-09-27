@@ -1,6 +1,8 @@
 import pandas as pd
 
 def calculate_win_rate(trades):
+    if len(trades) == 0:
+        return None
     winning_trades = [t for t in trades if t['sell_price'] > t['buy_price']]
     win_rate = len(winning_trades) / len(trades)
     return win_rate
@@ -13,6 +15,8 @@ def calculate_profit_factor(trades):
     total_profit = sum(t['sell_price'] - t['buy_price'] for t in winning_trades)
     total_loss = sum(t['buy_price'] - t['sell_price'] for t in losing_trades)
 
+    if total_loss == 0:
+        return None
     profit_factor = total_profit / total_loss
     return profit_factor
 
@@ -41,5 +45,7 @@ def calculate_sharpe_ratio(equity_curve):
     avg_return = daily_returns.mean()
     std_return = daily_returns.std()
 
+    if std_return == 0:
+        return None
     sharpe = (avg_return / std_return) * (252 ** 0.5)
     return sharpe

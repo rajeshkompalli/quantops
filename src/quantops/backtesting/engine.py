@@ -5,21 +5,20 @@ def run_backtest(df, starting_cash):
     buy_price = None
     equity_curve = []
 
-
     for index, row in df.iterrows():
-       if row['buy_signal'] == True and shares == 0:
-             shares = cash / row['close']
-             buy_price = row['close']
-             cash = 0
-             
-       elif row['death_cross'] == True and cash == 0 :
-             cash = shares * row['close'] 
-             trades.append({'buy_price':buy_price, 'sell_price':row['close']})
-             shares = 0
-         
+        if row['signal'] == 'BUY' and shares == 0:
+            shares = cash / row['close']
+            buy_price = row['close']
+            cash = 0
+            print(f"BUY on {row['timestamp']} at {row['close']}, shares={shares}")
+        elif row['signal'] == 'SELL' and cash == 0:
+            cash = shares * row['close']
+            trades.append({'buy_price': buy_price, 'sell_price': row['close']})
+            shares = 0
+            print(f"SELL on {row['timestamp']} at {row['close']}, cash={cash}")
 
-       current_value = shares*row['close'] if shares > 0 else cash
-       equity_curve.append(current_value)
+        current_value = shares * row['close'] if shares > 0 else cash
+        equity_curve.append(current_value)
 
     final_close = df['close'].iloc[-1]
     final_value = shares * final_close if shares > 0 else cash

@@ -64,3 +64,16 @@ RSI < 70 consistently *hurt* returns (~-30% vs. unfiltered on both stocks) by bl
 
 ### Overall Phase 2 takeaway
 Across two stocks and multiple metrics, the simple moving-average crossover strategy has not beaten buy-and-hold. This is treated as a legitimate research result, not a bug — the next step is testing a genuinely different strategy family (e.g., mean reversion) rather than continuing to tune this one.
+
+### Standalone RSI as a Mean-Reversion Strategy (buy RSI<30, sell RSI>70)
+
+| Metric | AAPL Strategy | AAPL Buy-Hold | INTC Strategy | INTC Buy-Hold |
+|---|---|---|---|---|
+| Final value | $18,812.06 | $18,372.66 | $11,920.14 | $25,732.22 |
+| CAGR | 26.1% | 25.0% | 6.7% | 41.4% |
+| Sharpe ratio | 1.35 | 0.95 | 0.37 | 0.85 |
+| Max drawdown | -10.8% | -33.4% | -54.9% | -63.4% |
+| Win rate | 80.0% | — | 71.4% | — |
+| Profit factor | 27.00 | — | 2.05 | — |
+
+**Conclusion:** Dramatic outperformance on AAPL did not replicate on INTC — buy-and-hold won decisively on INTC across every return metric. This strongly suggests the AAPL result was curve-fit to that stock's specific price behavior (likely a more range-bound, choppy pattern suited to mean reversion) rather than a durable edge. A third stock is needed before drawing any real conclusion about standalone RSI mean-reversion.
