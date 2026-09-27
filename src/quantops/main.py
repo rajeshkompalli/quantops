@@ -1,22 +1,62 @@
 from quantops.data.alpaca_client import get_historical_bars
 from quantops.strategies.moving_average import add_moving_average_signals
+from quantops.strategies.rsi import add_rsi
 from quantops.backtesting.engine import run_backtest
+from quantops.analytics.performance import calculate_win_rate, calculate_profit_factor, calculate_max_drawdown, calculate_cagr, calculate_sharpe_ratio
+from quantops.strategies.buy_and_hold import run_buy_and_hold
 
 
 def main():
     symbol = "AAPL"
-    start_date = "2024-01-01"
+    fetch_start_date = "2024-01-01"
     short_window = 20
     long_window = 50
     starting_cash = 10000
+    rsi_threshold = 100
 
-    df = get_historical_bars(symbol, start_date)
+    # --- Build signals ---
+    df = get_historical_bars(symbol, fetch_start_date)
     df = add_moving_average_signals(df, short_window, long_window)
-    final_value, buy_hold_value = run_backtest(df, starting_cash)
-    print(f"Symbol: {symbol}")
-    print(f"Strategy final value: {final_value}")
-    print(f"Buy-and-hold final value: {buy_hold_value}")
+    df = add_rsi(df, window=14)
+    df['buy_signal'] = df['golden_cross'] & (df['rsi'] < rsi_threshold)
 
+    # --- Run strategy backtest ---
+    final_value, buy_hold_value, trades, equity_curve = run_backtest(df, starting_cash)
+
+    # --- Run buy-and-hold benchmark ---
+    buy_hold_curve = run_buy_and_hold(df, starting_cash)
+
+    # --- Compute metrics ---
+    period_start = df['timestamp'].iloc[0]
+    period_end = df['timestamp'].iloc[-1]
+
+    win_rate = calculate_win_rate(trades)
+    profit_factor = calculate_profit_factor(trades)
+    max_dd = calculate_max_drawdown(equity_curve)
+    cagr = calculate_cagr(equity_curve, period_start, period_end)
+    sharpe = calculate_sharpe_ratio(equity_curve)
+
+    buy_hold_max_dd = calculate_max_drawdown(buy_hold_curve)
+    buy_hold_cagr = calculate_cagr(buy_hold_curve, period_start, period_end)
+    buy_hold_sharpe = calculate_sharpe_ratio(buy_hold_curve)
+
+    # --- Report ---
+    print(f"Symbol: {symbol}")
+    print(f"Period: {period_start.date()} to {period_end.date()}\n")
+
+    print("Strategy")
+    print(f"  Final value:     ${final_value:,.2f}")
+    print(f"  CAGR:            {cagr:.1%}")
+    print(f"  Sharpe ratio:    {sharpe:.2f}")
+    print(f"  Max drawdown:    {max_dd:.1%}")
+    print(f"  Win rate:        {win_rate:.1%}")
+    print(f"  Profit factor:   {profit_factor:.2f}")
+
+    print("\nBuy-and-Hold")
+    print(f"  Final value:     ${buy_hold_value:,.2f}")
+    print(f"  CAGR:            {buy_hold_cagr:.1%}")
+    print(f"  Sharpe ratio:    {buy_hold_sharpe:.2f}")
+    print(f"  Max drawdown:    {buy_hold_max_dd:.1%}")
 
 if __name__ == "__main__":
     main()

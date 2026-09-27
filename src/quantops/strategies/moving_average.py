@@ -16,3 +16,4 @@ def add_moving_average_signals(df,short_window,long_window):
 
     return df
 
+
