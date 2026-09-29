@@ -1,3 +1,15 @@
+from quantops.data.alpaca_client import get_historical_bars
+from quantops.strategies import moving_average, rsi, bollinger_bands
+from quantops.strategies.ensemble import generate_signals
+from quantops.strategies.buy_and_hold import run_buy_and_hold
+from quantops.analytics.performance import (
+    calculate_win_rate,
+    calculate_profit_factor,
+    calculate_max_drawdown,
+    calculate_cagr,
+    calculate_sharpe_ratio,
+)
+
 def run_backtest(df, starting_cash):
     cash = starting_cash
     shares = 0
@@ -28,3 +40,41 @@ def run_backtest(df, starting_cash):
     buy_hold_value = buy_hold_shares * final_close
 
     return final_value, buy_hold_value, trades, equity_curve
+
+
+def run_full_backtest(symbol, start_date, starting_cash=10000):
+
+    strategies = [
+        {'func': moving_average.generate_signals, 'weight': 1.0},
+        {'func': rsi.generate_signals, 'weight': 1.0},
+        {'func': bollinger_bands.generate_signals, 'weight': 1.0},
+    ]
+
+    df = get_historical_bars(symbol, start_date)
+    df = generate_signals(df, strategies)
+
+    final_value, buy_hold_value, trades, equity_curve = run_backtest(df, starting_cash)
+    buy_hold_curve = run_buy_and_hold(df, starting_cash)
+
+    period_start = df['timestamp'].iloc[0]
+    period_end = df['timestamp'].iloc[-1]
+
+    return {
+        "symbol": symbol,
+        "period_start": period_start,
+        "period_end": period_end,
+        "strategy": {
+            "final_value": final_value,
+            "cagr": calculate_cagr(equity_curve, period_start, period_end),
+            "sharpe_ratio": calculate_sharpe_ratio(equity_curve),
+            "max_drawdown": calculate_max_drawdown(equity_curve),
+            "win_rate": calculate_win_rate(trades),
+            "profit_factor": calculate_profit_factor(trades),
+        },
+        "buy_and_hold": {
+            "final_value": buy_hold_value,
+            "cagr": calculate_cagr(buy_hold_curve, period_start, period_end),
+            "sharpe_ratio": calculate_sharpe_ratio(buy_hold_curve),
+            "max_drawdown": calculate_max_drawdown(buy_hold_curve),
+        }
+    }
