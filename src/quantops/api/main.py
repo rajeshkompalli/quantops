@@ -1,7 +1,9 @@
+from typing import List, Optional
 from fastapi import FastAPI
-from pydantic import BaseModel
-from quantops.backtesting.engine import run_full_backtest
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+
+from quantops.backtesting.engine import run_full_backtest
 
 app = FastAPI()
 
@@ -15,7 +17,9 @@ app.add_middleware(
 class BacktestRequest(BaseModel):
     symbol: str
     start_date: str
+    end_date: Optional[str] = None
     starting_cash: float = 10000
+    strategies: List[str] = ["moving_average", "rsi", "bollinger_bands"]
 
 @app.get("/")
 def read_root():
@@ -23,5 +27,10 @@ def read_root():
 
 @app.post("/backtest")
 def run_backtest_endpoint(request: BacktestRequest):
-    return run_full_backtest(request.symbol, request.start_date, request.starting_cash)
-   
+    return run_full_backtest(
+        symbol=request.symbol,
+        start_date=request.start_date,
+        starting_cash=request.starting_cash,
+        end_date=request.end_date,
+        strategy_names=request.strategies,
+    )

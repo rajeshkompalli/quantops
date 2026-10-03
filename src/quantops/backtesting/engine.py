@@ -10,6 +10,12 @@ from quantops.analytics.performance import (
     calculate_sharpe_ratio,
 )
 
+STRATEGY_REGISTRY = {
+    "moving_average": moving_average.generate_signals,
+    "rsi": rsi.generate_signals,
+    "bollinger_bands": bollinger_bands.generate_signals,
+}
+
 def run_backtest(df, starting_cash):
     cash = starting_cash
     shares = 0
@@ -42,15 +48,16 @@ def run_backtest(df, starting_cash):
     return final_value, buy_hold_value, trades, equity_curve
 
 
-def run_full_backtest(symbol, start_date, starting_cash=10000):
+def run_full_backtest(symbol, start_date, starting_cash=10000, end_date=None, strategy_names=None):
+    if strategy_names is None:
+        strategy_names = list(STRATEGY_REGISTRY.keys())
 
     strategies = [
-        {'func': moving_average.generate_signals, 'weight': 1.0},
-        {'func': rsi.generate_signals, 'weight': 1.0},
-        {'func': bollinger_bands.generate_signals, 'weight': 1.0},
+        {'func': STRATEGY_REGISTRY[name], 'weight': 1.0}
+        for name in strategy_names
     ]
 
-    df = get_historical_bars(symbol, start_date)
+    df = get_historical_bars(symbol, start_date, end_date=end_date)
     df = generate_signals(df, strategies)
 
     final_value, buy_hold_value, trades, equity_curve = run_backtest(df, starting_cash)
