@@ -34,3 +34,25 @@ def run_backtest_endpoint(request: BacktestRequest):
         end_date=request.end_date,
         strategy_names=request.strategies,
     )
+
+
+class ResearchRequest(BaseModel):
+    symbols: List[str]
+    start_date: str
+    end_date: Optional[str] = None
+    starting_cash: float = 10000
+    strategies: List[str] = ["moving_average", "rsi", "bollinger_bands"]
+
+@app.post("/research")
+def run_research_endpoint(request: ResearchRequest):
+    results = []
+    for symbol in request.symbols:
+        result = run_full_backtest(
+            symbol=symbol,
+            start_date=request.start_date,
+            starting_cash=request.starting_cash,
+            end_date=request.end_date,
+            strategy_names=request.strategies,
+        )
+        results.append(result)
+    return {"results": results}
