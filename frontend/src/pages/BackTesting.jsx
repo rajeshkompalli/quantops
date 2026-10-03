@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Loader2, Play, RotateCcw, Trophy, TrendingDown } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const AVAILABLE_STRATEGIES = [
     {
@@ -38,6 +39,15 @@ function formatPercent(value) {
 function formatCurrency(value) {
     return `$${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
 }
+
+function buildChartData(result) {
+    return result.dates.map((date, i) => ({
+        date,
+        strategy: result.equity_curve[i],
+        buyHold: result.buy_hold_curve[i],
+    }));
+}
+
 
 function Backtesting() {
     const [symbol, setSymbol] = useState(DEFAULT_SYMBOL);
@@ -206,8 +216,8 @@ function Backtesting() {
                                     <label
                                         key={id}
                                         className={`flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${selectedStrategies.includes(id)
-                                                ? 'border-emerald-500/40 bg-emerald-500/5'
-                                                : 'border-slate-800 hover:border-slate-700'
+                                            ? 'border-emerald-500/40 bg-emerald-500/5'
+                                            : 'border-slate-800 hover:border-slate-700'
                                             }`}
                                     >
                                         <input
@@ -266,8 +276,8 @@ function Backtesting() {
                         >
                             <div
                                 className={`flex items-center gap-3 rounded-xl px-6 py-5 mb-6 border ${strategyWon
-                                        ? 'bg-emerald-500/10 border-emerald-500/30'
-                                        : 'bg-amber-500/10 border-amber-500/30'
+                                    ? 'bg-emerald-500/10 border-emerald-500/30'
+                                    : 'bg-amber-500/10 border-amber-500/30'
                                     }`}
                             >
                                 {strategyWon ? (
@@ -283,6 +293,35 @@ function Backtesting() {
                                         {symbol} · {yearsBack} {yearsBack === 1 ? 'year' : 'years'} · {formatCurrency(amount)} starting capital
                                     </p>
                                 </div>
+                            </div>
+
+                            <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-6">
+                                <h3 className="text-sm font-semibold text-white uppercase tracking-wide mb-5">
+                                    Equity Curve
+                                </h3>
+                                <ResponsiveContainer width="100%" height={280}>
+                                    <LineChart data={buildChartData(result)}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                                        <XAxis
+                                            dataKey="date"
+                                            tick={{ fill: '#64748b', fontSize: 12 }}
+                                            tickFormatter={(date) => date.slice(5)}
+                                            minTickGap={40}
+                                        />
+                                        <YAxis
+                                            tick={{ fill: '#64748b', fontSize: 12 }}
+                                            tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
+                                        />
+                                        <Tooltip
+                                            contentStyle={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '8px' }}
+                                            labelStyle={{ color: '#94a3b8' }}
+                                            formatter={(value) => [`$${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`]}
+                                        />
+                                        <Legend wrapperStyle={{ fontSize: '13px' }} />
+                                        <Line type="monotone" dataKey="strategy" name="Strategy" stroke="#34d399" strokeWidth={2} dot={false} />
+                                        <Line type="monotone" dataKey="buyHold" name="Buy & Hold" stroke="#64748b" strokeWidth={2} dot={false} />
+                                    </LineChart>
+                                </ResponsiveContainer>
                             </div>
 
                             <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">

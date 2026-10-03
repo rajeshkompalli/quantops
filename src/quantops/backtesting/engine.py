@@ -70,6 +70,9 @@ def run_full_backtest(symbol, start_date, starting_cash=10000, end_date=None, st
         "symbol": symbol,
         "period_start": period_start,
         "period_end": period_end,
+        "dates": df['timestamp'].dt.strftime('%Y-%m-%d').tolist(),
+        "equity_curve": equity_curve,
+        "buy_hold_curve": buy_hold_curve,
         "strategy": {
             "final_value": final_value,
             "cagr": calculate_cagr(equity_curve, period_start, period_end),
