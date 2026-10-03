@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Activity, Loader2, LineChart, ShieldCheck, Boxes, Sparkles } from 'lucide-react';
+import { Activity, Loader2, LineChart, ShieldCheck, Radar, Sparkles } from 'lucide-react';
 
 const capabilities = [
-    { icon: LineChart, text: 'Multi-strategy backtesting with real performance metrics' },
-    { icon: ShieldCheck, text: 'Risk-aware execution before any trade is placed' },
-    { icon: Boxes, text: 'Modular strategies — trend, mean-reversion, and ensembles' },
-    { icon: Sparkles, text: 'AI-assisted research, never AI-driven execution' },
+    { icon: LineChart, text: 'Stop guessing. See exactly how a strategy would have performed before you trust it with a dollar.' },
+    { icon: ShieldCheck, text: 'Trade with confidence. Every order is risk-checked before it ever reaches the market.' },
+    { icon: Radar, text: 'Never caught off guard. QuantOps watches the market — and itself — around the clock.' },
+    { icon: Sparkles, text: 'No more black boxes. Ask "why," and get a real answer, every time.' },
 ];
 
 function Login() {
@@ -37,7 +37,7 @@ function Login() {
                         </h1>
                     </div>
                     <p className="text-lg text-slate-400 mb-10 leading-relaxed">
-                        Research-driven strategies. Real engineering discipline.
+                        Quantitative Analysis. Automated Trading.
                     </p>
 
                     <div className="flex flex-col gap-5">
