@@ -1,5 +1,6 @@
 from quantops.backtesting.engine import run_full_backtest
 
+
 def main():
     symbol = "AAPL"
     fetch_start_date = "2024-01-01"

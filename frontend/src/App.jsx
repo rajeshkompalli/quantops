@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Login from './pages/Login';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
-import Backtesting from './pages/BackTesting';
+import Backtesting from './pages/Backtesting';
 import Research from './pages/Research';
 import Risk from './pages/Risk';
 import MarketIntelligence from './pages/MarketIntelligence';
