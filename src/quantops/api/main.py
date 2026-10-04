@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from quantops.backtesting.engine import run_full_backtest
+from quantops.backtesting.validation import run_train_test_backtest
 
 app = FastAPI()
 
@@ -56,3 +57,25 @@ def run_research_endpoint(request: ResearchRequest):
         )
         results.append(result)
     return {"results": results}
+
+
+class ValidationRequest(BaseModel):
+    symbol: str
+    train_start: str
+    train_end: str
+    test_start: str
+    test_end: str
+    starting_cash: float = 10000
+    strategies: List[str] = ["moving_average", "rsi", "bollinger_bands"]
+
+@app.post("/validate")
+def run_validation_endpoint(request: ValidationRequest):
+    return run_train_test_backtest(
+        symbol=request.symbol,
+        train_start=request.train_start,
+        train_end=request.train_end,
+        test_start=request.test_start,
+        test_end=request.test_end,
+        starting_cash=request.starting_cash,
+        strategy_names=request.strategies,
+    )

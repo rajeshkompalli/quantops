@@ -88,3 +88,4 @@ def run_full_backtest(symbol, start_date, starting_cash=10000, end_date=None, st
             "max_drawdown": calculate_max_drawdown(buy_hold_curve),
         }
     }
+
