@@ -3,8 +3,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+from datetime import date, timedelta
+
 from quantops.backtesting.engine import run_full_backtest
 from quantops.backtesting.validation import run_train_test_backtest
+from quantops.data.alpaca_client import get_historical_bars
+from quantops.strategies.ensemble import generate_signals
+from quantops.backtesting.engine import STRATEGY_REGISTRY
 
 app = FastAPI()
 
@@ -79,3 +84,29 @@ def run_validation_endpoint(request: ValidationRequest):
         starting_cash=request.starting_cash,
         strategy_names=request.strategies,
     )
+
+
+
+@app.get("/scan")
+def scan_watchlist(symbols: str = "AAPL,MSFT,NVDA,GOOGL,AMZN"):
+    symbol_list = [s.strip().upper() for s in symbols.split(",")]
+    lookback_start = (date.today() - timedelta(days=200)).isoformat()
+
+    strategy_names = ["moving_average", "rsi", "bollinger_bands"]
+    results = []
+    for symbol in symbol_list:
+        df = get_historical_bars(symbol, lookback_start)
+        strategies_config = [{'func': STRATEGY_REGISTRY[name], 'weight': 1.0} for name in strategy_names]
+        df = generate_signals(df, strategies_config)
+        latest = df.iloc[-1]
+        results.append({
+            "symbol": symbol,
+            "close": latest["close"],
+            "date": latest["timestamp"].strftime("%Y-%m-%d"),
+            "combined_signal": latest["signal"],
+            "votes": {
+                name: latest[f"signal_{i}"]
+                for i, name in enumerate(strategy_names)
+            },
+        })
+    return {"results": results}
